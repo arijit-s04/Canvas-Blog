@@ -10,7 +10,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 
-private const val PENCIL_STROKE_WIDTH = 8f
+private const val PENCIL_STROKE_WIDTH = 10f
+private const val ERASER_STROKE_WIDTH = 60f
 
 class Board @JvmOverloads constructor(
     context: Context,
@@ -18,14 +19,19 @@ class Board @JvmOverloads constructor(
     defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
 
     private var mPath: Path? = null
-    private val mDrawnPaths = mutableListOf<Path>()
+    private val mDrawnPaths = mutableListOf<Brush>()
     private val mPaint: Paint = Paint()
     private var mX = 0f
     private var mY = 0f
 
-    private fun setPen() {
+    fun setPen() {
         mPaint.color = Color.BLACK
         mPaint.strokeWidth = PENCIL_STROKE_WIDTH
+    }
+
+    fun setEraser() {
+        mPaint.color = Color.WHITE
+        mPaint.strokeWidth = ERASER_STROKE_WIDTH
     }
 
     private fun initialize() {
@@ -52,8 +58,8 @@ class Board @JvmOverloads constructor(
     }
 
     private fun drawPathsOnCanvas(canvas: Canvas) {
-        for(path in mDrawnPaths) {
-            canvas.drawPath(path, mPaint)
+        for(brush in mDrawnPaths) {
+            canvas.drawPath(brush.path, brush.paint)
         }
     }
 
@@ -74,7 +80,7 @@ class Board @JvmOverloads constructor(
 
     private fun touchDown(x: Float, y: Float) {
         mPath = Path()
-        mDrawnPaths.add(mPath!!)
+        mDrawnPaths.add(Brush(mPath!!, Paint(mPaint)))
         mPath?.apply {
             reset()
             moveTo(x, y)
@@ -94,3 +100,5 @@ class Board @JvmOverloads constructor(
         mPath = null
     }
 }
+
+class Brush(val path: Path, val paint: Paint) {}
